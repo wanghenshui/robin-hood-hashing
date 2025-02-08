@@ -6,6 +6,14 @@ project(robin-hood-hashing
 
 # generate compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(RH_BENCHMARK ON)
+include(cmake/CPM.cmake)
+
+if (NOT EXISTS ${CMAKE_BINARY_DIR}/CMakeCache.txt)
+  if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "" FORCE)
+  endif()
+endif()
 
 # determine whether this is a standalone project or included by other projects
 if (NOT DEFINED RH_STANDALONE_PROJECT)
@@ -19,7 +27,7 @@ endif()
 if (RH_STANDALONE_PROJECT)
     option(RH_sanitizer "Address sanitizer" OFF)
     option(RH_coverage "Enable coverage" OFF)
-    set(RH_cxx_standard "14" CACHE STRING "C++ standard, e.g. 11, 14, 17")
+    set(RH_cxx_standard "20" CACHE STRING "C++ standard, e.g. 11, 14, 17")
 
     set(CMAKE_CXX_STANDARD ${RH_cxx_standard})
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -164,4 +172,37 @@ else()
         NAMESPACE ${LIB_NAMESPACE}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
     )
+endif()
+
+if (RH_BENCHMARK)
+
+include(cmake/CPM.cmake)
+CPMAddPackage(
+  NAME benchmark
+  GITHUB_REPOSITORY google/benchmark
+  VERSION 1.8.3
+  OPTIONS "BENCHMARK_ENABLE_TESTING Off"
+)
+
+#CPMAddPackage(
+#  NAME Boost
+#  VERSION 1.87.0 # Versions less than 1.85.0 may need patches for installation targets.
+#  URL https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz
+#  URL_HASH SHA256=f55c340aa49763b1925ccf02b2e83f35fdcf634c9d5164a2acb87540173c741d
+#  OPTIONS "BOOST_ENABLE_CMAKE ON" "BOOST_SKIP_INSTALL_RULES ON" # Set `OFF` for installation
+#          "BUILD_SHARED_LIBS OFF" "BOOST_INCLUDE_LIBRARIES container\\\;asio" # Note the escapes!
+#)
+
+
+if(benchmark_ADDED)
+  # enable c++11 to avoid compilation errors
+  set_target_properties(benchmark PROPERTIES CXX_STANDARD 17)
+endif()	
+include_directories(src/include)
+
+add_executable(bm_find "benchmark/find.cc")
+target_link_libraries(bm_find benchmark)
+#target_link_libraries(bm_find PRIVATE Boost::headers Boost::container)
+target_compile_features(bm_find PRIVATE cxx_std_20)
+
 endif()
