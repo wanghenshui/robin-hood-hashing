@@ -184,6 +184,15 @@ CPMAddPackage(
   OPTIONS "BENCHMARK_ENABLE_TESTING Off"
 )
 
+CPMAddPackage(
+  NAME highway
+  URL https://github.com/google/highway/archive/refs/tags/1.1.0.tar.gz
+  URL_HASH SHA256=354a8b4539b588e70b98ec70844273e3f2741302c4c377bcc4e81b3d1866f7c9
+  
+  PATCHES "highway.patch" # This adds SYSTEM to the includes.
+  OPTIONS "HWY_ENABLE_EXAMPLES OFF" "HWY_ENABLE_INSTALL OFF" "HWY_ENABLE_TESTS OFF"
+)
+
 #CPMAddPackage(
 #  NAME Boost
 #  VERSION 1.87.0 # Versions less than 1.85.0 may need patches for installation targets.
